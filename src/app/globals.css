@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Brand palette sampled from the Admin Reset flyer. */
+@theme {
+  --color-cream: #f9f4f0;
+  --color-shell: #fffdfb;
+  --color-ink: #0d0e0d;
+  --color-body: #33291f;
+  --color-muted: #6c5f54;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-gold: #c17c2c;
+  --color-gold-deep: #a26620;
+  --color-gold-soft: #e6b87d;
+  --color-gold-line: #edd7b8;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-rose: #b3525d;
+  --color-rose-soft: #d69899;
+  --color-blush: #f7efe9;
+
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-script: var(--font-great-vibes), cursive;
+  --font-sans: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+}
+
+/* The flyer's hairline rule: a gold line that fades out at both ends. */
+@utility rule-fade {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-gold-line) 15%,
+    var(--color-gold-line) 85%,
+    transparent
+  );
+}
+
+/* Brushed-gold band used for the flyer's top and bottom edges. */
+@utility band-gold {
+  background: linear-gradient(
+    to right,
+    #a26620,
+    #e6b87d 20%,
+    #c9924a 45%,
+    #e9c089 70%,
+    #a97529
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
