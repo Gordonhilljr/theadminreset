@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Wordmark } from "@/components/wordmark";
 import {
   CalendarCheck,
   ChartUp,
@@ -79,6 +81,25 @@ const idealFor = [
   { icon: ChartUp, label: "Growing\nBusinesses" },
 ];
 
+const steps = [
+  {
+    title: "Share the details",
+    body: "A short intake form tells me what's messy and what you need it to look like.",
+  },
+  {
+    title: "Discovery call",
+    body: "A 15–20 minute call to talk through the problem and agree on the scope.",
+  },
+  {
+    title: "Scope & quote",
+    body: "A written summary of the deliverables, price, and completion date — before work starts.",
+  },
+  {
+    title: "Hand it off",
+    body: "I do the work and deliver it finished, organized, and ready to use.",
+  },
+];
+
 const promises = [
   {
     icon: Clock,
@@ -110,19 +131,6 @@ function RuledLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`inline-flex items-baseline gap-2 ${className}`}>
-      <span className="font-display text-[0.95em] font-medium uppercase tracking-[0.14em] text-ink">
-        The Admin
-      </span>
-      <span className="font-script text-[1.5em] leading-none text-gold">
-        Reset
-      </span>
-    </span>
-  );
-}
-
 export default function Home() {
   return (
     <>
@@ -144,12 +152,12 @@ export default function Home() {
               About
             </a>
           </nav>
-          <a
-            href={`mailto:${EMAIL}`}
+          <Link
+            href="/get-started"
             className="shrink-0 rounded-full bg-rose px-5 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-[#9c434e]"
           >
-            Let&rsquo;s connect
-          </a>
+            Get started
+          </Link>
         </div>
       </header>
 
@@ -234,12 +242,12 @@ export default function Home() {
             </div>
 
             <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-              <a
-                href={`mailto:${EMAIL}`}
+              <Link
+                href="/get-started"
                 className="rounded-full bg-rose px-7 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-sm transition hover:bg-[#9c434e]"
               >
-                Let&rsquo;s connect
-              </a>
+                Get started
+              </Link>
               <a
                 href="#services"
                 className="rounded-full border border-gold px-7 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-gold transition hover:bg-gold hover:text-white"
@@ -247,6 +255,13 @@ export default function Home() {
                 See what I handle
               </a>
             </div>
+
+            <p className="mt-5 text-center text-sm text-muted lg:text-left">
+              Packages starting at{" "}
+              <span className="font-bold text-ink">$45</span> &middot; Weekend
+              availability &middot; Scope and price confirmed before any work
+              begins
+            </p>
           </div>
         </section>
 
@@ -388,6 +403,37 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ---------------------------------------------- How it works */}
+        <section className="mx-auto max-w-5xl px-6 pb-20">
+          <div className="flex justify-center">
+            <h2 className="rounded-full bg-rose px-8 py-2.5 text-sm font-bold uppercase tracking-[0.18em] text-white sm:text-base">
+              How it works
+            </h2>
+          </div>
+
+          <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, i) => (
+              <li
+                key={step.title}
+                className="relative rounded-2xl border border-gold-line bg-shell px-6 py-7"
+              >
+                <span className="flex size-9 items-center justify-center rounded-full bg-gold font-display text-lg font-bold text-white">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 font-bold text-ink">{step.title}</h3>
+                <p className="mt-1.5 text-body/85">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+
+          <p className="mx-auto mt-8 max-w-2xl text-center text-body">
+            You&rsquo;ll always know the scope, the price, and the completion
+            date{" "}
+            <span className="font-bold text-ink">before any work starts</span> —
+            and nothing outside that scope happens without your approval.
+          </p>
+        </section>
+
         {/* -------------------------------------------------- Promises */}
         <section className="mx-auto max-w-5xl px-6 pb-20">
           <ul className="grid gap-6 sm:grid-cols-3">
@@ -428,12 +474,15 @@ export default function Home() {
               </p>
             </div>
 
-            <a
-              href={`mailto:${EMAIL}`}
+            <Link
+              href="/get-started"
               className="mt-9 inline-block rounded-full bg-rose px-9 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-[#9c434e]"
             >
-              Let&rsquo;s connect!
-            </a>
+              Get started
+            </Link>
+            <p className="mt-4 text-sm text-muted">
+              Takes about five minutes. No obligation on either side.
+            </p>
           </div>
         </section>
       </main>
