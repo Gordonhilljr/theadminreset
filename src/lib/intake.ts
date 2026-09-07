@@ -19,6 +19,9 @@ export const NEEDS_OPTIONS = [
   "Other administrative support",
 ] as const;
 
+/** The "Other" checkbox — picking it makes the describe box required. */
+export const OTHER_NEED = "Other administrative support";
+
 export const TIMELINE_OPTIONS = [
   "This weekend",
   "Within 1 week",
@@ -142,6 +145,9 @@ export function validate(
   const errors: Record<string, string> = {};
 
   if (!submission.name) errors.name = "Please tell me your name.";
+  if (!submission.businessName) {
+    errors.businessName = "Please enter your business name.";
+  }
 
   if (!submission.email) {
     errors.email = "I need an email address to reply to.";
@@ -149,17 +155,53 @@ export function validate(
     errors.email = "That doesn't look like a valid email address.";
   }
 
-  if (submission.needs.length === 0 && !submission.needsOther) {
-    errors.needs = "Pick at least one area, or describe it under Other.";
+  if (!submission.phone) errors.phone = "Please enter a phone number.";
+  if (!submission.website) {
+    errors.website = "Please share your website or a social media page.";
+  }
+  if (!submission.industry) {
+    errors.industry = "Please tell me your type of business or industry.";
+  }
+
+  if (submission.needs.length === 0) {
+    errors.needs = "Pick at least one area of support.";
+  }
+  if (submission.needs.includes(OTHER_NEED) && !submission.needsOther) {
+    errors.needsOther =
+      "You selected Other — please describe what you need help with.";
   }
 
   if (!submission.problem) {
     errors.problem = "A sentence or two about what feels messy is enough.";
   }
 
+  if (!submission.success) {
+    errors.success = "A sentence or two about the end result is enough.";
+  }
+  if (!submission.currentProcess) {
+    errors.currentProcess =
+      'Briefly describe it — or just say "nothing yet".';
+  }
+
   if (!submission.timeline) errors.timeline = "Choose a rough timeline.";
+  if (submission.timeline === "Other" && !submission.timelineOther) {
+    errors.timelineOther =
+      "You chose Other — let me know when you'd like this completed.";
+  }
+  if (!submission.urgency) errors.urgency = "Choose an urgency level.";
+
   if (!submission.projectSize) {
     errors.projectSize = "Choose a size — a guess is fine.";
+  }
+
+  if (!submission.tools) {
+    errors.tools = 'List the tools involved — or just say "none".';
+  }
+  if (!submission.access) {
+    errors.access = "Choose the option that fits best.";
+  }
+  if (!submission.contactPreference) {
+    errors.contactPreference = "Choose how you'd like to hear from me.";
   }
 
   for (const ack of ACKNOWLEDGEMENTS) {

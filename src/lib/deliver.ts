@@ -1,3 +1,5 @@
+import { Resend } from "resend";
+
 import { formatSubmission, type Submission } from "./intake";
 
 /**
@@ -35,28 +37,20 @@ export async function deliverSubmission(
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: submission.email,
-        subject,
-        text: body,
-      }),
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from,
+      to: [to],
+      replyTo: submission.email,
+      subject,
+      text: body,
     });
 
-    if (!res.ok) {
+    if (error) {
       // Log the submission so a provider outage never loses a lead.
-      console.error(
-        `[intake] Delivery failed (${res.status}): ${await res.text()}`,
-      );
+      console.error(`[intake] Delivery failed (${error.name}): ${error.message}`);
       console.info(`[intake] Undelivered submission:\n\n${body}`);
-      return { delivered: false, reason: `http-${res.status}` };
+      return { delivered: false, reason: error.name };
     }
 
     return { delivered: true };

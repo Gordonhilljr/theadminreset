@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitIntake } from "@/app/actions";
 import {
   ACCESS_OPTIONS,
   ACKNOWLEDGEMENTS,
   CONTACT_OPTIONS,
   NEEDS_OPTIONS,
+  OTHER_NEED,
   SIZE_OPTIONS,
   TIMELINE_OPTIONS,
   URGENCY_OPTIONS,
@@ -50,14 +51,29 @@ function Section({
   );
 }
 
+function RequiredMark() {
+  // The "* Required" note at the top of the form explains the symbol; screen
+  // readers hear the input's own required/aria-required state instead.
+  return (
+    <span
+      aria-hidden="true"
+      className="ml-1 align-middle text-xl font-bold leading-none text-rose"
+    >
+      *
+    </span>
+  );
+}
+
 function Field({
   label,
   name,
+  required,
   error,
   children,
 }: {
   label: string;
   name: string;
+  required?: boolean;
   error?: string;
   children: React.ReactNode;
 }) {
@@ -68,6 +84,7 @@ function Field({
         className="mb-1.5 block text-sm font-semibold text-ink"
       >
         {label}
+        {required ? <RequiredMark /> : null}
       </label>
       {children}
       {error ? (
@@ -97,7 +114,7 @@ function Text({
   autoComplete?: string;
 }) {
   return (
-    <Field label={label} name={name} error={error}>
+    <Field label={label} name={name} required={required} error={error}>
       <input
         id={name}
         name={name}
@@ -116,21 +133,24 @@ function TextArea({
   label,
   name,
   rows = 4,
+  required,
   defaultValue,
   error,
 }: {
   label: string;
   name: string;
   rows?: number;
+  required?: boolean;
   defaultValue?: string;
   error?: string;
 }) {
   return (
-    <Field label={label} name={name} error={error}>
+    <Field label={label} name={name} required={required} error={error}>
       <textarea
         id={name}
         name={name}
         rows={rows}
+        required={required}
         defaultValue={defaultValue}
         aria-invalid={error ? true : undefined}
         className={`${fieldBase} resize-y`}
@@ -144,11 +164,13 @@ function Choice({
   name,
   value,
   defaultChecked,
+  onChange,
 }: {
   type: "radio" | "checkbox";
   name: string;
   value: string;
   defaultChecked?: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-3 rounded-lg px-3 py-2 transition hover:bg-blush/60">
@@ -157,6 +179,7 @@ function Choice({
         name={name}
         value={value}
         defaultChecked={defaultChecked}
+        onChange={onChange}
         className="mt-1 size-4 shrink-0 accent-[#c17c2c]"
       />
       <span className="text-body">{value}</span>
@@ -166,17 +189,20 @@ function Choice({
 
 function ChoiceGroup({
   legend,
+  required,
   children,
   error,
 }: {
   legend: string;
+  required?: boolean;
   children: React.ReactNode;
   error?: string;
 }) {
   return (
-    <fieldset>
+    <fieldset aria-required={required || undefined}>
       <legend className="mb-1.5 text-sm font-semibold text-ink">
         {legend}
+        {required ? <RequiredMark /> : null}
       </legend>
       <div className="-mx-3">{children}</div>
       {error ? (
@@ -248,10 +274,18 @@ export function IntakeForm() {
     { status: "idle" },
   );
 
-  if (state.status === "success") return <Confirmation name={state.name} />;
-
   const errors = state.status === "error" ? state.errors : {};
   const values = state.status === "error" ? state.values : empty;
+
+  // Choosing "Other" makes its describe box required, live.
+  const [otherNeed, setOtherNeed] = useState(
+    values.needs?.includes(OTHER_NEED) ?? false,
+  );
+  const [otherTimeline, setOtherTimeline] = useState(
+    values.timeline === "Other",
+  );
+
+  if (state.status === "success") return <Confirmation name={state.name} />;
 
   return (
     <form action={formAction} className="space-y-10" noValidate>
@@ -263,6 +297,11 @@ export function IntakeForm() {
           {errors.form}
         </p>
       ) : null}
+
+      <p className="text-sm text-muted">
+        Questions marked <span className="font-semibold text-rose">*</span> are
+        required.
+      </p>
 
       <Section step={1} title="About you & your business">
         <div className="grid gap-5 sm:grid-cols-2">
@@ -277,8 +316,10 @@ export function IntakeForm() {
           <Text
             label="Business name"
             name="businessName"
+            required
             autoComplete="organization"
             defaultValue={values.businessName}
+            error={errors.businessName}
           />
           <Text
             label="Email"
@@ -293,18 +334,24 @@ export function IntakeForm() {
             label="Phone number"
             name="phone"
             type="tel"
+            required
             autoComplete="tel"
             defaultValue={values.phone}
+            error={errors.phone}
           />
           <Text
             label="Website / social media"
             name="website"
+            required
             defaultValue={values.website}
+            error={errors.website}
           />
           <Text
             label="Type of business / industry"
             name="industry"
+            required
             defaultValue={values.industry}
+            error={errors.industry}
           />
         </div>
       </Section>
@@ -315,7 +362,7 @@ export function IntakeForm() {
         hint="Check all that may apply. We'll confirm the actual project scope together."
       >
         <div className="space-y-6">
-          <ChoiceGroup legend="Areas of support" error={errors.needs}>
+          <ChoiceGroup legend="Areas of support" required error={errors.needs}>
             <div className="sm:columns-2">
               {NEEDS_OPTIONS.map((option) => (
                 <div key={option} className="break-inside-avoid">
@@ -324,6 +371,11 @@ export function IntakeForm() {
                     name="needs"
                     value={option}
                     defaultChecked={values.needs?.includes(option)}
+                    onChange={
+                      option === OTHER_NEED
+                        ? (e) => setOtherNeed(e.currentTarget.checked)
+                        : undefined
+                    }
                   />
                 </div>
               ))}
@@ -333,13 +385,16 @@ export function IntakeForm() {
           <Text
             label="If you selected Other, please describe"
             name="needsOther"
+            required={otherNeed}
             defaultValue={values.needsOther}
+            error={errors.needsOther}
           />
 
           <TextArea
             label="In your own words, what feels messy, unfinished, time-consuming, or difficult right now?"
             name="problem"
             rows={5}
+            required
             defaultValue={values.problem}
             error={errors.problem}
           />
@@ -351,13 +406,17 @@ export function IntakeForm() {
           <TextArea
             label="When this project is finished, what would you like to have, know, or be able to do more easily?"
             name="success"
+            required
             defaultValue={values.success}
+            error={errors.success}
           />
           <TextArea
             label="Are you currently using any spreadsheet, document, system, or process for this work? If yes, briefly describe it."
             name="currentProcess"
             rows={3}
+            required
             defaultValue={values.currentProcess}
+            error={errors.currentProcess}
           />
         </div>
       </Section>
@@ -366,6 +425,7 @@ export function IntakeForm() {
         <div className="space-y-6">
           <ChoiceGroup
             legend="When would you ideally like this completed?"
+            required
             error={errors.timeline}
           >
             {TIMELINE_OPTIONS.map((option) => (
@@ -375,6 +435,7 @@ export function IntakeForm() {
                 name="timeline"
                 value={option}
                 defaultChecked={values.timeline === option}
+                onChange={() => setOtherTimeline(option === "Other")}
               />
             ))}
           </ChoiceGroup>
@@ -382,10 +443,16 @@ export function IntakeForm() {
           <Text
             label="If you chose Other, when?"
             name="timelineOther"
+            required={otherTimeline}
             defaultValue={values.timelineOther}
+            error={errors.timelineOther}
           />
 
-          <ChoiceGroup legend="How urgent is this project?">
+          <ChoiceGroup
+            legend="How urgent is this project?"
+            required
+            error={errors.urgency}
+          >
             {URGENCY_OPTIONS.map((option) => (
               <Choice
                 key={option}
@@ -411,7 +478,7 @@ export function IntakeForm() {
         title="Estimated project size"
         hint="Don't worry if you're unsure — this simply helps me prepare for our call."
       >
-        <ChoiceGroup legend="Project size" error={errors.projectSize}>
+        <ChoiceGroup legend="Project size" required error={errors.projectSize}>
           {SIZE_OPTIONS.map((option) => (
             <Choice
               key={option}
@@ -430,10 +497,16 @@ export function IntakeForm() {
             label="What tools or platforms are involved, if any? (Excel, Google Sheets, Google Drive, email, calendar, etc.)"
             name="tools"
             rows={3}
+            required
             defaultValue={values.tools}
+            error={errors.tools}
           />
 
-          <ChoiceGroup legend="Will this project require access to any business accounts or confidential information?">
+          <ChoiceGroup
+            legend="Will this project require access to any business accounts or confidential information?"
+            required
+            error={errors.access}
+          >
             {ACCESS_OPTIONS.map((option) => (
               <Choice
                 key={option}
@@ -456,7 +529,11 @@ export function IntakeForm() {
 
       <Section step={7} title="Communication">
         <div className="space-y-6">
-          <ChoiceGroup legend="Preferred communication for project updates">
+          <ChoiceGroup
+            legend="Preferred communication for project updates"
+            required
+            error={errors.contactPreference}
+          >
             {CONTACT_OPTIONS.map((option) => (
               <Choice
                 key={option}
@@ -477,7 +554,11 @@ export function IntakeForm() {
         </div>
       </Section>
 
-      <Section step={8} title="Before you submit">
+      <Section
+        step={8}
+        title="Before you submit"
+        hint="All three boxes must be checked before your form can be submitted."
+      >
         <div className="-mx-3 space-y-1">
           {ACKNOWLEDGEMENTS.map((ack) => (
             <div key={ack.name}>
@@ -485,9 +566,13 @@ export function IntakeForm() {
                 <input
                   type="checkbox"
                   name={ack.name}
+                  required
                   className="mt-1 size-4 shrink-0 accent-[#c17c2c]"
                 />
-                <span className="text-body">{ack.label}</span>
+                <span className="text-body">
+                  {ack.label}
+                  <RequiredMark />
+                </span>
               </label>
               {errors[ack.name] ? (
                 <p role="alert" className="px-3 text-sm font-medium text-rose">
