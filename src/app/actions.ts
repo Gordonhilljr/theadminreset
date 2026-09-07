@@ -29,7 +29,7 @@ export async function submitIntake(
       errors: {
         form:
           "Something went wrong sending your form. Please email " +
-          "theadminreset44@gmail.com directly and I'll pick it up from there.",
+          "daniellew@theadminreset.com directly and I'll pick it up from there.",
       },
       values: submission,
     };

@@ -22,7 +22,7 @@ import {
   Users,
 } from "@/components/icons";
 
-const EMAIL = "theadminreset44@gmail.com";
+const EMAIL = "daniellew@theadminreset.com";
 
 const services = [
   {

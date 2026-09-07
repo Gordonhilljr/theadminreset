@@ -16,7 +16,7 @@ import {
 } from "@/lib/intake";
 import { CalendarCheck, CheckCircle, Envelope } from "./icons";
 
-const EMAIL = "theadminreset44@gmail.com";
+const EMAIL = "daniellew@theadminreset.com";
 
 const fieldBase =
   "w-full rounded-lg border border-gold-line bg-cream px-4 py-2.5 text-body " +
